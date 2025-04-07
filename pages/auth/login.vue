@@ -117,20 +117,30 @@ const handleLogin = async () => {
 }
 
 const handleGoogleLogin = async () => {
-  try {
-    googleLoading.value = true
-    // TODO: 實現 Google 登入邏輯
-    console.log('Google login')
-    
-    // 模擬 API 調用
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // 登入成功後跳轉到首頁
-    navigateTo('/')
-  } catch (error) {
-    console.error('Google login failed:', error)
-  } finally {
-    googleLoading.value = false
+
+  // TODO: 實現 Google 登入邏輯
+  console.log('Google login')
+  
+  const baseUrl = window.location.origin;
+  console.log(baseUrl);
+  // // 根據環境決定重定向路徑
+  let redirectTarget = '';
+  if(import.meta.env.MODE === 'development') {
+    const redirectPath = '/google/callback';
+    redirectTarget = `${baseUrl}${redirectPath}`;
+    console.log(redirectTarget);
+  } else {
+    const redirectPath = '/google/callback';
+    redirectTarget = `${baseUrl}${redirectPath}`;
+    console.log(redirectTarget);
   }
+  
+  // 將重定向 URL 編碼後作為 state 參數傳遞
+  const encodedRedirectTarget = encodeURIComponent(redirectTarget);
+
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&redirect_uri=${encodeURIComponent(import.meta.env.VITE_GOOGLE_CALLBACK_URL)}&scope=email%20profile&client_id=${import.meta.env.VITE_GOOGLE_CLIENT_ID}&state=${encodedRedirectTarget}`;
+  
+  window.location.href = authUrl;
+    
 }
 </script> 
