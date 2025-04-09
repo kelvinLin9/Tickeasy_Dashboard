@@ -7,3 +7,6 @@ export const LOGIN_URL = `${BASE_URL}/api/v1/auth/login`;
 export const CHECK_URL = `${BASE_URL}/api/v1/auth/check`;
 export const PROFILE_URL = `${BASE_URL}/api/v1/users/profile`;
 export const GOOGLE_LOGIN_URL = `${BASE_URL}/api/v1/auth/google`;
+
+// admin
+export const USERS_URL = `${BASE_URL}/api/v1/admin/users`;

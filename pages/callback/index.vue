@@ -70,22 +70,15 @@ async function handleToken() {
 
     // 2. 獲取用戶詳細資料
     console.log('開始獲取用戶詳細資料')
-    const { data: profileData, error: profileError } = await getUserProfile(token)
-    console.log('profileData:', profileData)
-    if (profileError.value) {
-      console.error('獲取用戶資料失敗:', profileError.value)
-      if (profileError.value.statusCode === 401) {
-        throw new Error('登入令牌已過期')
-      }
-      throw new Error('獲取用戶資料失敗')
-    }
-
-    if (!profileData.value?.user) {
+    const profileResponse = await getUserProfile(token)
+    console.log('profileResponse:', profileResponse)
+    
+    if (!profileResponse.success || !profileResponse.user) {
       console.error('API 返回的用戶資料為空')
       throw new Error('無效的用戶資料')
     }
 
-    const userProfile = profileData.value.user
+    const userProfile = profileResponse.user
     console.log('成功獲取用戶資料:', {
       id: userProfile._id,
       email: userProfile.email,

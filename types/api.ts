@@ -67,4 +67,22 @@ export interface CheckResponse {
 export interface ProfileResponse {
   success: boolean;
   user: UserProfile;
+}
+
+// 用戶列表相關
+export interface PaginationInfo {
+  total: number;
+  totalPages: number;
+  currentPage: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export interface UsersResponse {
+  success: boolean;
+  data: {
+    users: UserProfile[];
+    pagination: PaginationInfo;
+  };
 } 
