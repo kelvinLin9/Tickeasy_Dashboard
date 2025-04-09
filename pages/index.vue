@@ -65,7 +65,7 @@
             </tr>
             <tr v-for="user in users" :key="user._id">
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <span class="font-mono">{{ shortenId(user._id) }}</span>
+                {{ user._id }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 <div class="flex items-center">
@@ -150,6 +150,9 @@
 
 <script setup>
 import { getUsers } from '~/api/users'
+import { useUserStore } from '~/stores/user'
+
+const userStore = useUserStore()
 
 const columns = [
   {
@@ -273,11 +276,4 @@ const prevPage = () => {
 onMounted(() => {
   fetchUsers()
 })
-
-// 添加縮短ID的函數
-const shortenId = (id) => {
-  if (!id) return '';
-  if (id.length <= 8) return id;
-  return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
-}
 </script> 
