@@ -197,6 +197,7 @@ onMounted(() => {
 
 const handleLogout = () => {
   userStore.clearUser()
+  localStorage.removeItem('auth_token')
   router.push('/login')
 }
 </script> 

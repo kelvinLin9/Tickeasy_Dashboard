@@ -65,7 +65,7 @@
             </tr>
             <tr v-for="user in users" :key="user._id">
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ user._id }}
+                <span class="font-mono">{{ shortenId(user._id) }}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 <div class="flex items-center">
@@ -82,6 +82,11 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm">
                 <span :class="getStatusClass(user.isEmailVerified)">
                   {{ user.isEmailVerified ? '已驗證' : '未驗證' }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <span :class="getGoogleClass(user.oauthProviders)">
+                  {{ hasGoogleAuth(user.oauthProviders) ? '是' : '否' }}
                 </span>
               </td>
             </tr>
@@ -145,9 +150,6 @@
 
 <script setup>
 import { getUsers } from '~/api/users'
-import { useUserStore } from '~/stores/user'
-
-const userStore = useUserStore()
 
 const columns = [
   {
@@ -174,6 +176,11 @@ const columns = [
     id: 'status',
     key: 'isEmailVerified',
     label: '狀態'
+  },
+  {
+    id: 'google',
+    key: 'oauthProviders',
+    label: 'Google 註冊'
   }
 ]
 
@@ -236,6 +243,17 @@ const getStatusClass = (isVerified) => {
     : 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800'
 }
 
+// 獲取Google驗證樣式
+const hasGoogleAuth = (providers) => {
+  return providers && providers.some(provider => provider.provider === 'google')
+}
+
+const getGoogleClass = (providers) => {
+  return hasGoogleAuth(providers)
+    ? 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800'
+    : 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800'
+}
+
 // 分頁控制
 const nextPage = () => {
   if (pagination.value.hasNextPage) {
@@ -255,4 +273,11 @@ const prevPage = () => {
 onMounted(() => {
   fetchUsers()
 })
+
+// 添加縮短ID的函數
+const shortenId = (id) => {
+  if (!id) return '';
+  if (id.length <= 8) return id;
+  return `${id.substring(0, 4)}...${id.substring(id.length - 4)}`;
+}
 </script> 
