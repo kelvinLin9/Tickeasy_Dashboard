@@ -59,7 +59,8 @@ export interface EmailVerifyResponse extends ApiResponse {
 // 檢查登入相關
 export interface CheckResponse {
   success: boolean;
-  message: string;
+  role: string;
+  token: string;
 }
 
 // Profile 相關

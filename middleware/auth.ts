@@ -1,6 +1,6 @@
 import { useUserStore } from '~/stores/user'
 
-export default defineNuxtRouteMiddleware((to) => {
+export default defineNuxtRouteMiddleware(async (to) => {
   console.log('執行身份驗證中間件')
   console.log('目標路由:', to.path)
   
@@ -13,8 +13,13 @@ export default defineNuxtRouteMiddleware((to) => {
     return
   }
 
+  // 主動檢查用戶登入狀態
+  console.log('開始檢查用戶登入狀態')
+  const isAuthenticated = await userStore.check()
+  console.log('檢查結果:', isAuthenticated ? '已登入' : '未登入')
+
   // 檢查用戶是否已登入
-  if (!userStore.isAuthenticated) {
+  if (!isAuthenticated) {
     console.log('用戶未登入，重定向到登入頁面')
     // 保存原始目標路徑
     const redirectPath = encodeURIComponent(to.fullPath)

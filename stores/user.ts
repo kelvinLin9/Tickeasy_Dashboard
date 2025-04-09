@@ -39,43 +39,32 @@ export const useUserStore = defineStore('user', () => {
 
       // 1. 檢查登入狀態
       console.log('開始調用 checkLogin API')
-      const { data: checkData, error: checkError } = await checkLogin(`Bearer ${currentToken}`)
+      const checkResponse = await checkLogin(`Bearer ${currentToken}`)
+      console.log('Check API 返回數據:', checkResponse)
 
-      if (checkError.value) {
-        console.error('Check API 返回錯誤:', checkError.value)
-        if (checkError.value.statusCode === 401) {
-          clearUser()
-          return false
-        }
-        throw checkError.value
+      if (!checkResponse) {
+        console.error('Check API 返回數據為空')
+        clearUser()
+        return false
       }
 
-      if (!checkData.value) {
-        console.error('Check API 返回數據為空')
+      if (!checkResponse.success) {
+        console.error('Check API 返回失敗')
         clearUser()
         return false
       }
 
       // 2. 獲取用戶詳細資料
       console.log('開始獲取用戶詳細資料')
-      const { data: profileData, error: profileError } = await getUserProfile(currentToken)
+      const profileResponse = await getUserProfile(currentToken)
 
-      if (profileError.value) {
-        console.error('Profile API 返回錯誤:', profileError.value)
-        if (profileError.value.statusCode === 401) {
-          clearUser()
-          return false
-        }
-        throw profileError.value
-      }
-
-      if (!profileData.value?.user) {
+      if (!profileResponse?.user) {
         console.error('Profile API 返回數據為空')
         clearUser()
         return false
       }
 
-      const userProfile = profileData.value.user
+      const userProfile = profileResponse.user
       console.log('成功獲取用戶資料:', {
         id: userProfile._id,
         email: userProfile.email,
@@ -148,11 +137,11 @@ export const useUserStore = defineStore('user', () => {
         return
       }
 
-      const { data: checkData } = await checkLogin(storedToken)
-      if (checkData.value?.success) {
-        const { data: profileData } = await getUserProfile(storedToken)
-        if (profileData.value?.success && profileData.value.user) {
-          const userProfile = profileData.value.user
+      const checkResponse = await checkLogin(storedToken)
+      if (checkResponse?.success) {
+        const profileResponse = await getUserProfile(storedToken)
+        if (profileResponse?.success && profileResponse.user) {
+          const userProfile = profileResponse.user
           setUser({
             id: userProfile._id,
             role: userProfile.role,
