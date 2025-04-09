@@ -205,29 +205,54 @@ const handleLogin = async () => {
   }
 }
 
+// const handleGoogleLogin = () => {
+//   console.log('sign in with google');
+  
+//   // 獲取當前的域名和協議作為基礎 URL
+//   const baseUrl = window.location.origin;
+//   console.log(baseUrl);
+//   // // 根據環境決定重定向路徑
+//   let redirectTarget = '';
+//   if(import.meta.env.MODE === 'development') {
+//     const redirectPath = '/google/callback';
+//     redirectTarget = `${baseUrl}${redirectPath}`;
+//     console.log(redirectTarget);
+//   } else {
+//     const redirectPath = '/google/callback';
+//     redirectTarget = `${baseUrl}${redirectPath}`;
+//     console.log(redirectTarget);
+//   }
+  
+//   // 將重定向 URL 編碼後作為 state 參數傳遞
+//   const encodedRedirectTarget = encodeURIComponent(redirectTarget);
+
+//   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&redirect_uri=${encodeURIComponent(import.meta.env.VITE_GOOGLE_CALLBACK_URL)}&scope=email%20profile&client_id=${import.meta.env.VITE_GOOGLE_CLIENT_ID}&state=${encodedRedirectTarget}`;
+  
+//   window.location.href = authUrl;
+// }
+
+// 使用我們的後端 API 端點，而不是直接使用 Google 的端點
+// 後端定向
 const handleGoogleLogin = () => {
   console.log('sign in with google');
   
   // 獲取當前的域名和協議作為基礎 URL
   const baseUrl = window.location.origin;
-  console.log(baseUrl);
-  // // 根據環境決定重定向路徑
-  let redirectTarget = '';
-  if(import.meta.env.MODE === 'development') {
-    const redirectPath = '/google/callback';
-    redirectTarget = `${baseUrl}${redirectPath}`;
-    console.log(redirectTarget);
-  } else {
-    const redirectPath = '/google/callback';
-    redirectTarget = `${baseUrl}${redirectPath}`;
-    console.log(redirectTarget);
-  }
+  console.log('Base URL:', baseUrl);
+
+  // 根據環境決定重定向路徑
+  const redirectTarget = `${baseUrl}/google/callback`;
+  console.log('Redirect Target:', redirectTarget);
   
   // 將重定向 URL 編碼後作為 state 參數傳遞
   const encodedRedirectTarget = encodeURIComponent(redirectTarget);
-
-  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&redirect_uri=${encodeURIComponent(import.meta.env.VITE_GOOGLE_CALLBACK_URL)}&scope=email%20profile&client_id=${import.meta.env.VITE_GOOGLE_CLIENT_ID}&state=${encodedRedirectTarget}`;
+  console.log('Encoded Redirect Target:', encodedRedirectTarget);
+  // 使用我們的後端 API 端點，而不是直接使用 Google 的端點
+  const authUrl = `https://concert-ticket-booking-mongodb.onrender.com/api/v1/auth/google?state=${encodedRedirectTarget}`;
   
   window.location.href = authUrl;
 }
+
+
+
 </script> 

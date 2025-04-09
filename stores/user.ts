@@ -1,105 +1,197 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { checkLogin } from '~/api/check'
+import { getUserProfile } from '~/api/profile'
 
-interface UserState {
-  id: string | null
-  role: string | null
-  token: string | null
-  isAuthenticated: boolean
-  name: string | null
-  email: string | null
-  photo: string | null
-}
+export const useUserStore = defineStore('user', () => {
+  // State
+  const id = ref<string | null>(null)
+  const role = ref<string | null>(null)
+  const token = ref<string | null>(null)
+  const isAuthenticated = ref<boolean>(false)
+  const name = ref<string | null>(null)
+  const email = ref<string | null>(null)
+  const avatar = ref<string | null>(null)
+  const isLoading = ref<boolean>(false)
 
-export const useUserStore = defineStore('user', {
-  state: (): UserState => ({
-    id: null,
-    role: null,
-    token: null,
-    isAuthenticated: false,
-    name: null,
-    email: null,
-    photo: null
-  }),
+  // Getters
+  const userId = computed(() => id.value)
+  const userRole = computed(() => role.value)
+  const authToken = computed(() => token.value)
+  const userName = computed(() => name.value)
+  const userEmail = computed(() => email.value)
+  const userPhoto = computed(() => avatar.value)
 
-  getters: {
-    userId: (state: UserState) => state.id,
-    userRole: (state: UserState) => state.role,
-    authToken: (state: UserState) => state.token,
-    userName: (state: UserState) => state.name,
-    userEmail: (state: UserState) => state.email,
-    userPhoto: (state: UserState) => state.photo
-  },
+  // Actions
+  async function check() {
+    console.log('開始檢查用戶登入狀態')
+    isLoading.value = true
+    
+    try {
+      const currentToken = token.value || localStorage.getItem('auth_token')
+      console.log('當前 Token:', currentToken ? '存在' : '不存在')
+      
+      if (!currentToken) {
+        console.log('未找到 Token，清除用戶資料')
+        clearUser()
+        return false
+      }
 
-  actions: {
-    setUser(userData: { 
-      id: string
-      role: string
-      token: string
-      name?: string
-      email?: string
-      photo?: string
-    }) {
-      this.$patch({
-        id: userData.id,
-        role: userData.role,
-        token: userData.token,
-        name: userData.name || null,
-        email: userData.email || null,
-        photo: userData.photo || null,
-        isAuthenticated: true
+      // 1. 檢查登入狀態
+      console.log('開始調用 checkLogin API')
+      const { data: checkData, error: checkError } = await checkLogin(`Bearer ${currentToken}`)
+
+      if (checkError.value) {
+        console.error('Check API 返回錯誤:', checkError.value)
+        if (checkError.value.statusCode === 401) {
+          clearUser()
+          return false
+        }
+        throw checkError.value
+      }
+
+      if (!checkData.value) {
+        console.error('Check API 返回數據為空')
+        clearUser()
+        return false
+      }
+
+      // 2. 獲取用戶詳細資料
+      console.log('開始獲取用戶詳細資料')
+      const { data: profileData, error: profileError } = await getUserProfile(currentToken)
+
+      if (profileError.value) {
+        console.error('Profile API 返回錯誤:', profileError.value)
+        if (profileError.value.statusCode === 401) {
+          clearUser()
+          return false
+        }
+        throw profileError.value
+      }
+
+      if (!profileData.value?.user) {
+        console.error('Profile API 返回數據為空')
+        clearUser()
+        return false
+      }
+
+      const userProfile = profileData.value.user
+      console.log('成功獲取用戶資料:', {
+        id: userProfile._id,
+        email: userProfile.email,
+        role: userProfile.role
+      })
+      
+      // 3. 更新用戶資料
+      setUser({
+        id: userProfile._id,
+        role: userProfile.role,
+        token: currentToken,
+        name: userProfile.email.split('@')[0], // 使用郵箱前綴作為名稱
+        email: userProfile.email,
+        avatar: userProfile.avatar
       })
 
-      // 同時更新 localStorage
+      console.log('用戶資料更新完成')
+      return true
+    } catch (error) {
+      console.error('認證檢查失敗:', error)
+      clearUser()
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const setUser = async (userData: {
+    id: string;
+    role: string;
+    token: string;
+    name: string | null;
+    email: string;
+    avatar: string;
+  }) => {
+    try {
+      id.value = userData.id
+      role.value = userData.role
+      token.value = userData.token
+      name.value = userData.name
+      email.value = userData.email
+      avatar.value = userData.avatar
+      isAuthenticated.value = true
+      
       localStorage.setItem('auth_token', userData.token)
-      localStorage.setItem('user_info', JSON.stringify({
-        userId: userData.id,
-        role: userData.role,
-        name: userData.name,
-        email: userData.email,
-        photo: userData.photo
-      }))
-    },
+    } catch (error) {
+      console.error('設置用戶資料失敗:', error)
+      clearUser()
+    }
+  }
 
-    clearUser() {
-      this.$patch({
-        id: null,
-        role: null,
-        token: null,
-        name: null,
-        email: null,
-        photo: null,
-        isAuthenticated: false
-      })
+  function clearUser() {
+    id.value = null
+    role.value = null
+    token.value = null
+    isAuthenticated.value = false
+    name.value = null
+    email.value = null
+    avatar.value = null
+    
+    // localStorage.removeItem('auth_token')
+    localStorage.removeItem('user_info')
+  }
 
-      // 清除 localStorage
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('user_info')
-    },
+  const restoreUser = async () => {
+    try {
+      const storedToken = localStorage.getItem('auth_token')
+      if (!storedToken) {
+        clearUser()
+        return
+      }
 
-    // 從 localStorage 恢復用戶狀態
-    restoreUser() {
-      const token = localStorage.getItem('auth_token')
-      const userInfo = localStorage.getItem('user_info')
-
-      if (token && userInfo) {
-        try {
-          const { userId, role, name, email, photo } = JSON.parse(userInfo)
-          this.$patch({
-            id: userId,
-            role,
-            token,
-            name,
-            email,
-            photo,
-            isAuthenticated: true
+      const { data: checkData } = await checkLogin(storedToken)
+      if (checkData.value?.success) {
+        const { data: profileData } = await getUserProfile(storedToken)
+        if (profileData.value?.success && profileData.value.user) {
+          const userProfile = profileData.value.user
+          setUser({
+            id: userProfile._id,
+            role: userProfile.role,
+            token: storedToken,
+            name: userProfile.email.split('@')[0], // 使用郵箱前綴作為名稱
+            email: userProfile.email,
+            avatar: userProfile.avatar
           })
-        } catch (error) {
-          console.error('Failed to restore user state:', error)
-          this.clearUser()
         }
       } else {
-        this.clearUser()
+        clearUser()
       }
+    } catch (error) {
+      console.error('恢復用戶資料失敗:', error)
+      clearUser()
     }
+  }
+
+  return {
+    // State
+    id,
+    role,
+    token,
+    isAuthenticated,
+    name,
+    email,
+    avatar,
+    isLoading,
+    // Getters
+    userId,
+    userRole,
+    authToken,
+    userName,
+    userEmail,
+    userPhoto,
+    // Actions
+    setUser,
+    clearUser,
+    restoreUser,
+    check
   }
 }) 

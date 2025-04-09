@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-neutral-50">
-    <!-- 使用 SiteNavbar 組件 -->
-    <SiteNavbar />
+    <!-- 使用 Navbar 組件 -->
+    <Navbar />
 
     <!-- 主要內容區域 -->
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">

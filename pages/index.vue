@@ -49,7 +49,27 @@
     <div class="mt-8">
       <h2 class="text-lg font-medium text-neutral-900">最近訂單</h2>
       <div class="mt-4 bg-white shadow rounded-lg overflow-hidden">
-        <UTable :columns="columns" :rows="rows" />
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th v-for="col in columns" :key="col.id" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {{ col.label }}
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr v-if="rows.length === 0">
+              <td :colspan="columns.length" class="px-6 py-4 text-center text-sm text-gray-500">
+                尚無訂單資料
+              </td>
+            </tr>
+            <tr v-for="row in rows" :key="row.id">
+              <td v-for="col in columns" :key="col.id" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {{ row[col.key] }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
