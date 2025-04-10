@@ -241,7 +241,7 @@ const handleGoogleLogin = () => {
   console.log('Base URL:', baseUrl);
 
   // 根據環境決定重定向路徑
-  const redirectTarget = `${baseUrl}/google/callback`;
+  const redirectTarget = `${baseUrl}/callback`;
   console.log('Redirect Target:', redirectTarget);
   
   // 將重定向 URL 編碼後作為 state 參數傳遞
@@ -249,7 +249,7 @@ const handleGoogleLogin = () => {
   console.log('Encoded Redirect Target:', encodedRedirectTarget);
   // 使用我們的後端 API 端點，而不是直接使用 Google 的端點
   const authUrl = `https://concert-ticket-booking-mongodb.onrender.com/api/v1/auth/google?state=${encodedRedirectTarget}`;
-  
+  console.log('Auth URL:', authUrl);
   window.location.href = authUrl;
 }
 
