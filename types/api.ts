@@ -1,5 +1,5 @@
 // 通用的 API 回應格式
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   status: boolean;
   message?: string;
   data?: T;
@@ -58,15 +58,28 @@ export interface EmailVerifyResponse extends ApiResponse {
 
 // 檢查登入相關
 export interface CheckResponse {
-  success: boolean;
-  role: string;
+  success?: boolean;  // 可能存在
+  status?: boolean;   // 可能存在
+  user?: {
+    _id: string;
+    email: string;
+    role: string;
+    isEmailVerified: boolean;
+  };
+  role?: string;    // 舊格式
   token: string;
+  message?: string;
+  errorCode?: string;
+  remainingSeconds?: number;
 }
 
 // Profile 相關
 export interface ProfileResponse {
-  success: boolean;
+  success?: boolean;
+  status?: boolean;
   user: UserProfile;
+  message?: string;
+  errorCode?: string;
 }
 
 // 用戶列表相關

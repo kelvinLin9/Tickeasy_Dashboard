@@ -12,11 +12,14 @@ export const checkLogin = (token: string) => {
       throw new Error('Empty response from check API');
     }
     
+    // 檢查 success 或 status 屬性
+    const isSuccessful = response.success || response.status;
+    
     // 如果驗證成功，儲存新的 token
-    if (response.success && response.token) {
+    if (isSuccessful && response.token) {
       console.log('Login status verified, storing new token');
       // 使用 localStorage 儲存新的 token
-      localStorage.setItem('token', response.token);
+      localStorage.setItem('auth_token', response.token);
     }
     
     return response;

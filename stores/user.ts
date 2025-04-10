@@ -48,7 +48,9 @@ export const useUserStore = defineStore('user', () => {
         return false
       }
 
-      if (!checkResponse.success) {
+      // 檢查 success 或 status 屬性
+      const isSuccessful = checkResponse.success || checkResponse.status
+      if (!isSuccessful) {
         console.error('Check API 返回失敗')
         clearUser()
         return false
@@ -125,7 +127,7 @@ export const useUserStore = defineStore('user', () => {
     email.value = null
     avatar.value = null
     
-    // localStorage.removeItem('auth_token')
+    localStorage.removeItem('auth_token')
     localStorage.removeItem('user_info')
   }
 
@@ -138,9 +140,15 @@ export const useUserStore = defineStore('user', () => {
       }
 
       const checkResponse = await checkLogin(storedToken)
-      if (checkResponse?.success) {
+      
+      // 檢查 success 或 status 屬性
+      const isSuccessful = checkResponse?.success || checkResponse?.status
+      
+      if (isSuccessful) {
         const profileResponse = await getUserProfile(storedToken)
-        if (profileResponse?.success && profileResponse.user) {
+        const profileSuccessful = profileResponse?.success || profileResponse?.status
+        
+        if (profileSuccessful && profileResponse.user) {
           const userProfile = profileResponse.user
           setUser({
             id: userProfile._id,
